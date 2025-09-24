@@ -1,0 +1,75 @@
+mongosh
+
+-- Switch to (or create) database
+use LibraryDB
+
+-- Create a collection
+db.createCollection("Books")
+
+-- Insert one document
+db.Books.insertOne({
+    BookID: 1,
+    Title: "DBMS Concepts",
+    Author: "Navathe",
+    Year: 2019
+})
+
+-- Insert multiple documents
+db.Books.insertMany([
+    { BookID: 2, Title: "Operating System", Author: "Galvin", Year: 2020 },
+    { BookID: 3, Title: "C Programming", Author: "Kernighan", Year: 2018 },
+    { BookID: 4, Title: "Java Complete Reference", Author: "Schildt", Year: 2021 }
+])
+
+
+-- Show all documents
+db.Books.find()
+
+-- Find one document
+db.Books.findOne({ BookID: 2 })
+
+-- Projection: only Title and Author
+db.Books.find({}, { Title: 1, Author: 1, _id: 0 })
+
+-- Logical operator (OR)
+db.Books.find({
+    $or: [ { Author: "Galvin" }, { Year: { $gt: 2019 } } ]
+})
+
+-- Update one document
+db.Books.updateOne(
+    { BookID: 3 },
+    { $set: { Year: 2022 } }
+)
+
+-- Update many documents
+db.Books.updateMany(
+    { Year: { $lt: 2020 } },
+    { $set: { Author: "Unknown" } }
+)
+
+-- Save method (deprecated but for assignment)
+db.Books.save({
+    BookID: 5,
+    Title: "Python Programming",
+    Author: "Guido",
+    Year: 2023
+})
+-- Delete one document
+db.Books.deleteOne({ BookID: 4 })
+
+-- Delete many documents
+db.Books.deleteMany({ Year: { $lt: 2020 } })
+
+-- extra queries
+-- Count total documents
+db.Books.countDocuments()
+
+-- Sort by Year descending
+db.Books.find().sort({ Year: -1 })
+
+-- Limit results
+db.Books.find().limit(2)
+
+-- AND condition
+db.Books.find({ Author: "Navathe", Year: 2019 })
