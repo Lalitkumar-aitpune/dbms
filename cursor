@@ -1,0 +1,60 @@
+-- Old RollCall table
+CREATE TABLE O_RollCall (
+    RollNo INT PRIMARY KEY,
+    Name   VARCHAR(100),
+    Class  VARCHAR(50)
+);
+
+-- New RollCall table
+CREATE TABLE N_RollCall (
+    RollNo INT,
+    Name   VARCHAR(100),
+    Class  VARCHAR(50)
+);
+
+-- Insert sample data
+INSERT INTO O_RollCall VALUES (1, 'Amit', '10A'), (2, 'Neha', '10B');
+INSERT INTO N_RollCall VALUES (2, 'Neha', '10B'), (3, 'Raj', '10C'), (4, 'Sita', '10A');
+
+
+DELIMITER $$
+
+CREATE PROCEDURE Merge_Parameterized()
+BEGIN
+    DECLARE v_RollNo INT;
+    DECLARE v_Name VARCHAR(100);
+    DECLARE v_Class VARCHAR(50);
+    DECLARE done INT DEFAULT 0;
+
+    -- Cursor for N_RollCall
+    DECLARE cur_new CURSOR FOR
+        SELECT RollNo, Name, Class FROM N_RollCall;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN cur_new;
+
+    read_loop: LOOP
+        FETCH cur_new INTO v_RollNo, v_Name, v_Class;
+        IF done = 1 THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Parameterized style: check existence dynamically
+        IF NOT EXISTS (
+            SELECT 1 FROM O_RollCall WHERE RollNo = v_RollNo
+        ) THEN
+            INSERT INTO O_RollCall(RollNo, Name, Class)
+            VALUES(v_RollNo, v_Name, v_Class);
+        END IF;
+
+    END LOOP;
+
+    CLOSE cur_new;
+END$$
+
+DELIMITER ;
+
+CALL Merge_Parameterized();
+
+SELECT * FROM O_RollCall;
+
